@@ -11,6 +11,11 @@ from sklearn.feature_selection import f_regression
 from sklearn.feature_selection import f_classif
 from itertools import combinations
 
+def val_couts_cols (Dataframe,cols):
+  for x in cols:
+    print('coluna: {0}, categorias: {1}'.format(x,len(Dataframe[x].value_counts())))
+  print('Total:' + str(len(Dataframe)))
+
 def to_type(DataFrame, columns, type):
   DataFrame_aux = DataFrame.copy()
   for col in columns:
@@ -37,20 +42,20 @@ def remove_incoherence(DataFrame,expression, replace_val, columns=[]):
             break
     return DataFrame_aux
  
-def remove_low_freq(DataFrame, target_name, threshold=0.25):
-  class_freq = (DataFrame[target_name].value_counts())
-  cut_low_freq = DataFrame[DataFrame[target_name].isin(class_freq[class_freq >= threshold*class_freq.max()].index)]
+def remove_cat_low_freq(DataFrame, col_name, threshold=0.25):
+  cat_freq = (DataFrame[col_name].value_counts())
+  cut_low_freq = DataFrame[DataFrame[col_name].isin(cat_freq[cat_freq >= threshold*cat_freq.max()].index)]
   return cut_low_freq
 
-def feature_selection(Dataset, features, target ,in_out, method='na'): 
+def feature_selection(Dataset, feature, target ,in_out, method='na'): 
   fs_score =[]
   oe = OrdinalEncoder()
 
-  X = np.array(Dataset.loc[:,features])
+  X = (np.array(Dataset[feature])).reshape(-1,1)
   oe.fit(X)
   X_enc = oe.transform(X)
 
-  y = np.array(Dataset.loc[:,target])
+  y = np.array(Dataset[target]).reshape(-1,1)
   oe.fit(y)
   y_enc = oe.transform(y)
   
@@ -63,7 +68,7 @@ def feature_selection(Dataset, features, target ,in_out, method='na'):
     fs_score = fs.scores_
   elif in_out == 'num_num':
     fs = SelectKBest(score_func=f_regression, k='all')
-    fs.fit(X, y)
+    fs.fit(X, y.ravel())
     fs_score = fs.scores_
   elif in_out == 'num_cat':
     fs = SelectKBest(score_func=f_classif, k='all')
@@ -71,7 +76,7 @@ def feature_selection(Dataset, features, target ,in_out, method='na'):
     fs_score = fs.scores_
   elif in_out == 'cat_num':
     fs = SelectKBest(score_func=f_classif, k='all')
-    fs.fit(X_enc, y)
+    fs.fit(X_enc, y.ravel())
     fs_score = fs.scores_
   else:
     fs_score=[]
@@ -79,10 +84,13 @@ def feature_selection(Dataset, features, target ,in_out, method='na'):
   return fs_score
 
 def exclui_outliers(DataFrame, col_name):
-  intervalo = 2.7*DataFrame[col_name].std()
-  media = DataFrame[col_name].mean()
-  DataFrame.loc[df[col_name] < (media - intervalo), col_name] = np.nan
-  DataFrame.loc[df[col_name] > (media + intervalo), col_name] = np.nan
+  Q1 = DataFrame[col_name].quantile(.25)
+  Q3 = DataFrame[col_name].quantile(.75)
+  IIQ =Q3 -Q1
+  limite_inf = Q1 -1.5*IIQ
+  limite_sup = Q3 +1.5*IIQ
+  
+  return DataFrame[(DataFrame[col_name]>=limite_inf) & (DataFrame[col_name]<=limite_sup)]
 
 def subplot_strip(Dataset,features,target):
   perm_features = list(combinations(features, 2))
@@ -92,6 +100,3 @@ def subplot_strip(Dataset,features,target):
         sns.stripplot(ax=axes[i],data=Dataset,x=perm[0],y=perm[1], hue=target)
   plt.show()
 
-def count_labels(Dataframe,categorical_columns):
-  for col in categorical_columns:
-    print('coluna: {0} {1}'.format(col, len(Dataframe[col].value_counts())))
