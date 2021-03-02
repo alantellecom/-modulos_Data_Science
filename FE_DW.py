@@ -14,7 +14,7 @@ from itertools import combinations
 def val_couts_cols (Dataframe,cols):
   for x in cols:
     print('coluna: {0}, categorias: {1}'.format(x,len(Dataframe[x].value_counts())))
-  print('Total:' + str(len(Dataframe)))
+  print('Total Samples :' + str(len(Dataframe)))
 
 def to_type(DataFrame, columns, type):
   DataFrame_aux = DataFrame.copy()
