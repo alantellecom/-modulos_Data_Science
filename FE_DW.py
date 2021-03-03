@@ -39,13 +39,19 @@ def remove_incoherence(DataFrame,expression, replace_val, columns=[]):
     return DataFrame_aux
   else: 
     for col in columns:
+      i=0
       while (True): # quando trabalhamos com grupos no regex, ele não é capaz de substituir todos os grupos, então é necessario iterar a cada nova substituição
         DataFrame_aux[col]=DataFrame[col].str.replace(expression, replace_val, regex=True)
         #warnings.filterwarnings('ignore','UserWarning') # para evitar warning quando str.contains chamar expressions contendo groups que não serão utilizados
         num_matchs = len(DataFrame_aux[DataFrame_aux[col].str.contains(expression, na=False)])#  verifica se regex funcionou, caso sim retorna 0, senão retorna o numero de matchs
         DataFrame = DataFrame_aux
+        
         if num_matchs == 0:
             break
+        if i == 100:
+            DataFrame_aux =pd.DataFrame([])
+            break
+        i+=1
     return DataFrame_aux
  
 def group_low_freq_cats(DataFrame, col_name, threshold=0.01, name='others'):
