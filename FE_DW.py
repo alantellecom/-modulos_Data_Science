@@ -48,10 +48,12 @@ def remove_incoherence(DataFrame,expression, replace_val, columns=[]):
             break
     return DataFrame_aux
  
-def remove_cat_low_freq(DataFrame, col_name, threshold=0.25):
-  cat_freq = (DataFrame[col_name].value_counts())
-  cut_low_freq = DataFrame[DataFrame[col_name].isin(cat_freq[cat_freq >= threshold*cat_freq.max()].index)]
-  return cut_low_freq
+def group_low_freq_cats(DataFrame, col_name, threshold=0.01, name='others'):
+  df = DataFrame.copy()
+  cat_freq = df[col_name].value_counts()
+  cat_low_freq = cat_freq[cat_freq/cat_freq.sum() <= threshold].index
+  df.loc[df[col_name].isin(cat_low_freq),col_name]='others'
+  return df
 
 def feature_selection(Dataset, feature, target ,in_out, method='na'): 
   fs_score =[]
@@ -106,3 +108,15 @@ def subplot_strip(Dataset,features,target):
         sns.stripplot(ax=axes[i],data=Dataset,x=perm[0],y=perm[1], hue=target)
   plt.show()
 
+def boxplot_by_col(df,cat_cols,target):
+  fig, ax = plt.subplots(len(cat_cols), 1, figsize=(25, 18))
+  fig.subplots_adjust()
+  t=0
+  for var, subplot in zip(cat_cols, ax.flatten()):
+      ax[t].set_xlabel(var,fontsize=18)
+      sort_qtl_index = df.groupby(var)[target].quantile(0.5).sort_values().index
+      sort_qtl_values = df.groupby(var)[target].quantile(0.5).sort_values()
+      sns.boxplot(x=var, y=target, data=df, ax=subplot,order=sort_qtl_index)
+      sns.pointplot(x=sort_qtl_index,y= sort_qtl_values,ax=subplot,color='r')
+      t+=1    
+  plt.tight_layout(pad=3) 
