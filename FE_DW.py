@@ -15,6 +15,12 @@ def val_couts_cols (Dataframe,cols):
   for x in cols:
     print('coluna: {0}, categorias: {1}'.format(x,len(Dataframe[x].value_counts())))
   print('Total Samples :' + str(len(Dataframe)))
+  
+def get_col_type(df,col_type):
+  cols_types=df.dtypes.reset_index()
+  cols_types.columns=['col','type']
+  cols_type = cols_types.apply(lambda x: x['col'] if x['type']==col_type else np.nan ,axis=1)
+  return cols_type.dropna()
 
 def to_type(DataFrame, columns, type):
   DataFrame_aux = DataFrame.copy()
