@@ -31,9 +31,7 @@ def to_type(DataFrame, columns, type):
 def remove_incoherence(DataFrame,expression, replace_val, columns=[]):
   if len(columns)==0:
     columns = DataFrame.columns
-  
-  DataFrame_aux=DataFrame.copy()
-  
+    
   if str(replace_val) == str(np.nan):
     DataFrame_aux=DataFrame.replace(expression, replace_val, regex=True) # não usar str.replace pois não aceita np.nan
     return DataFrame_aux
@@ -112,7 +110,7 @@ def subplot_strip(Dataset,features,target):
   
   for i, perm in enumerate(perm_features):
         sns.stripplot(ax=axes[i],data=Dataset,x=perm[0],y=perm[1], hue=target)
-  plt.show()
+  plt.tight_layout(pad=3)
 
 def boxplot_by_col(df,cat_cols,target):
   fig, ax = plt.subplots(len(cat_cols), 1, figsize=(25, 18))
@@ -125,4 +123,34 @@ def boxplot_by_col(df,cat_cols,target):
       sns.boxplot(x=var, y=target, data=df, ax=subplot,order=sort_qtl_index)
       sns.pointplot(x=sort_qtl_index,y= sort_qtl_values,ax=subplot,color='r')
       t+=1    
-  plt.tight_layout(pad=3) 
+  plt.tight_layout(pad=3)
+  
+def plot_hists_scatters(*args,cols=['none'],type_plot='scatter',target=[]):
+  
+  if np.array_equal(target,[]) & (type_plot  == 'scatter'):
+    print('No target')
+  elif len(args)==1:
+    if type_plot  == 'scatter':
+      plt.title(cols[0],fontsize=18)
+      sns.scatterplot(x=args[0],y=target)
+    else:
+      plt.title(cols[0],fontsize=18)
+      sns.histplot(args[0])
+  else:
+    fig, ax = plt.subplots(1, len(args), figsize=(10, 4))
+    t=0
+    for arg, subplot in zip(args,ax.flatten()):  
+      if type_plot == 'hist':
+        if len(cols) == 1:
+          ax[t].set_title(cols[0],fontsize=18)
+        else:
+          ax[t].set_title(cols[t],fontsize=18)
+        sns.histplot(arg, ax=subplot)
+      else:
+        if len(cols) == 1:
+          ax[t].set_title(cols[0],fontsize=18)
+        else:
+          ax[t].set_title(cols[t],fontsize=18)
+        sns.scatterplot(x=arg,y=target, ax=subplot)
+      t+=1
+    plt.tight_layout(pad=3) 
