@@ -153,4 +153,30 @@ def plot_hists_scatters(*args,cols=['none'],type_plot='scatter',target=[]):
           ax[t].set_title(cols[t],fontsize=18)
         sns.scatterplot(x=arg,y=target, ax=subplot)
       t+=1
-    plt.tight_layout(pad=3) 
+    plt.tight_layout(pad=3)
+    
+def is_not_date(x): # using with df[df['col'].map(is_not_date)]
+    import re
+    return (len(re.findall('[0-9]+/[0-9]+/[0-9]+',x)))==0
+ 
+def get_related_items(df_1):
+    if df_1['col_filter'] == val_1:
+        return  df_1['col_target']
+    elif  df_1['col_filter'] == val_2: 
+        return  df_2[df_2['col_id']==df_1['col_id']]['col_target'].values[0]
+    else: # val_3
+        return  df_3[df_3['col_id']==x['col_id']]['col_target'].values[0]
+ 
+# break lines with datetime interval in discret lines by time unit (days, weeks, months, hours, etc)
+
+df_souce['delta'] = df_souce['col_end'] - df_souce['col_start']
+df_souce['delta'] = df_souce['delta'].apply(lambda x: (x.days + 1)) # days ou seconds (if other time units, we need to calculate the conversion)
+df_break = df_source.copy()
+for i, x in df_source.iterrows():
+    if x['delta'] > 1:
+        aux = pd.DataFrame([x]*x['delta'])
+        days = pd.date_range(x['col_start'],x['col_end'],freq='D')
+        aux['col_start'], aux['col_end'], aux['col_dur'] = days, days, 1    
+        df_break= df_break.append(aux,ignore_index=True)
+        
+df_break.drop(df_break[df_break['delta']>1].index,inplace=True) # drop consolidate line
