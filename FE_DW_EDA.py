@@ -95,7 +95,7 @@ def feature_selection(Dataset, feature, target ,in_out, method='na'):
 
   return fs_score
 
-def exclui_outliers(DataFrame, col_name):
+def exclude_outliers(DataFrame, col_name):
   Q1 = DataFrame[col_name].quantile(.25)
   Q3 = DataFrame[col_name].quantile(.75)
   IIQ =Q3 -Q1
@@ -180,3 +180,8 @@ for i, x in df_source.iterrows():
         df_break= df_break.append(aux,ignore_index=True)
         
 df_break.drop(df_break[df_break['delta']>1].index,inplace=True) # drop consolidate line
+
+def remove_low_freq(DataFrame, target_name, threshold=0.25):
+  class_freq = (DataFrame[target_name].value_counts())
+  cut_low_freq = DataFrame[DataFrame[target_name].isin(class_freq[class_freq >= threshold*class_freq.max()].index)]
+  return cut_low_freq
